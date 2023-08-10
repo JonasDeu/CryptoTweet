@@ -1,3 +1,20 @@
+// Put your credentials and trading details here
+// ---------
+const triggerWords = ['doge', 'dogecoin', 'wow', 'moon'];
+const accountName = 'tweetingPerson';
+
+const cryptoShorthand = 'DOGEEUR'
+const cryptoAmount = 1000
+const timeToSell = 720000
+// ---------
+
+const rules = [
+	{
+		value: `(${valueWords.join(' OR ')}) from:${fromName}`,
+		tag: '',
+	},
+];
+
 require('dotenv').config()
 const Binance = require('node-binance-api')
 const binance = new Binance().options({
@@ -6,18 +23,10 @@ const binance = new Binance().options({
 })
 
 const needle = require('needle')
-let boughtDOGE = false
 const token = process.env.BEARER_TOKEN
 
 const rulesURL = 'https://api.twitter.com/2/tweets/search/stream/rules'
 const streamURL = 'https://api.twitter.com/2/tweets/search/stream'
-
-const rules = [
-	{
-		value: '(doge OR dogecoin OR wow OR moon) from:elonmusk',
-		tag: 'dogg pictures',
-	},
-]
 
 async function getAllRules() {
 	const response = await needle('get', rulesURL, {
@@ -94,20 +103,18 @@ function streamConnect() {
 				console.log(new Date().toLocaleString())
 				console.log(json)
 
-				console.log(boughtDOGE)
-
-				if (boughtDOGE == false && json.data.id) {
-					boughtDOGE = true
-
-					console.log('I BOUGHT DOGE!!!!!')
-					binance.marketBuy('DOGEEUR', 600)
+				if (json.data.id) {
+					console.log('Buying')
+					binance.marketBuy(cryptoShorthand, cryptoAmount)
+					console.log('Bought')
 
 					setTimeout(function () {
-						console.log('I SOLD DOGE??????????')
-						binance.marketSell('DOGEEUR', 600)
-					}, 720000)
+						console.log(`Selling after ${timeToSell}`)
+						binance.marketSell(cryptoShorthand, cryptoAmount)
+						console.log('Sold')
+					}, timeToSell)
 				} else {
-					console.log('NOT BUYING DOGE')
+					console.log('Not buying')
 				}
 			} catch (e) {
 				// Keep alive signal received. Do nothing.
